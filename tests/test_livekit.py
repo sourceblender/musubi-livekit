@@ -26,7 +26,7 @@ import time
 from typing import Any
 
 import pytest
-from musubi.sdk.testing import AsyncFakeMusubiClient
+from musubi_sdk.testing import AsyncFakeMusubiClient
 
 from musubi_livekit import (
     ContextCache,
@@ -330,7 +330,7 @@ def test_session_transcript_uploaded_as_vtt() -> None:
 def test_upload_retries_on_transient_failure() -> None:
     """Bullet 13 — adapter retries a failing upload before giving up."""
 
-    from musubi.sdk.exceptions import BackendUnavailable
+    from musubi_sdk.exceptions import BackendUnavailable
 
     attempts = {"n": 0}
 
@@ -362,7 +362,7 @@ def test_upload_queue_persists_on_hard_failure() -> None:
     """Bullet 14 — an upload that exhausts retries is enqueued for
     deferred retry, not dropped."""
 
-    from musubi.sdk.exceptions import BackendUnavailable
+    from musubi_sdk.exceptions import BackendUnavailable
 
     def always_fail(**kw: Any) -> dict[str, Any]:
         raise BackendUnavailable(code="BACKEND_UNAVAILABLE", detail="x", status_code=503)

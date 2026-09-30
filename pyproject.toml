@@ -6,7 +6,7 @@ readme = "README.md"
 requires-python = ">=3.12"
 license = "Apache-2.0"
 dependencies = [
-  "musubi @ git+https://github.com/sourceblender/musubi.git@v1.27.1",
+  "musubi-sdk>=0.1.0",
 ]
 
 [project.urls]
@@ -17,9 +17,6 @@ Issues = "https://github.com/sourceblender/musubi-livekit/issues"
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
-
-[tool.hatch.metadata]
-allow-direct-references = true
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/musubi_livekit"]
@@ -52,5 +49,9 @@ show_error_codes = true
 files = ["src/musubi_livekit"]
 
 [[tool.mypy.overrides]]
-module = ["musubi.sdk.*"]
+module = ["musubi_sdk.*"]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = ["musubi.sdk.exceptions"]
 ignore_missing_imports = true

@@ -286,3 +286,20 @@ async def test_e2e_session_end_emits_retrievable_thought(api_client: Any) -> Non
         f"session-end summary thought not found in namespace inbox for "
         f"session {session_id!r}: {items}"
     )
+
+
+async def test_core_sdk_error_still_queues_transcript(api_client: Any) -> None:
+    """The old core SDK exception hierarchy remains catchable during migration."""
+    from musubi.sdk.exceptions import BackendUnavailable
+
+    adapter = _adapter(api_client)
+
+    def fail_upload(**kwargs: Any) -> None:
+        raise BackendUnavailable(code="BACKEND_UNAVAILABLE", detail="test", status_code=503)
+
+    api_client._upload_handler = fail_upload
+    await adapter._upload_transcript_with_retry(
+        session_id="legacy-core-client", vtt_transcript="WEBVTT\n\nlegacy"
+    )
+    assert len(adapter.failed_upload_queue) == 1
+    assert isinstance(adapter.failed_upload_queue[0]["last_error"], BackendUnavailable)

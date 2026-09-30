@@ -15,6 +15,6 @@ def api_client() -> Any:
     if not url or not token:
         pytest.skip("set MUSUBI_TEST_API_URL and MUSUBI_TEST_TOKEN for a disposable test stack")
 
-    from musubi.sdk import AsyncMusubiClient
+    from musubi_sdk import AsyncMusubiClient
 
     return AsyncMusubiClient(base_url=url, token=token)
