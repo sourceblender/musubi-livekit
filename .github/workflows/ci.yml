@@ -39,3 +39,6 @@ jobs:
       - run: cp tests/integration/test_livekit_e2e.py core/tests/integration/test_livekit_plugin_e2e.py
       - run: uv run --no-sync --extra dev pytest -q -m integration tests/integration/test_livekit_plugin_e2e.py
         working-directory: core
+        env:
+          # Core's chunked sparse embedder loads the gated SPLADE-v3 tokenizer.
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
