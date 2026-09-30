@@ -10,14 +10,12 @@ event subscriptions, credentials, and user-facing responses.
 
 Requires Python 3.12 or later. The adapter depends on the standalone
 [`musubi-sdk`](https://pypi.org/project/musubi-sdk/) client, not the Musubi server.
-The SDK is installed from PyPI as a dependency:
+Both packages are published on PyPI. Install the released adapter and its SDK
+dependency with:
 
 ```bash
-pip install 'git+https://github.com/sourceblender/musubi-livekit.git'
+pip install musubi-livekit==0.1.0
 ```
-
-The plugin itself is not published to PyPI yet; the GitHub install above is
-the current supported install path.
 
 ## Use in a worker
 
