@@ -67,6 +67,21 @@ The unit suite exercises the extracted adapter and retrieval degradation
 channel. Three historical tests remain skipped because they require a running
 Musubi stack and a LiveKit session simulator; they are not release evidence.
 
+Five integration tests exercise the adapter through the real Musubi SDK and API.
+They write memories and thoughts, so point them only at a disposable test stack
+with an operator-scoped test token:
+
+```bash
+MUSUBI_TEST_API_URL=http://127.0.0.1:8100/v1 \
+MUSUBI_TEST_TOKEN=<disposable-test-token> \
+uv run pytest -q -m integration tests/integration/test_livekit_e2e.py
+```
+
+The default test command excludes these integration tests. Their fixture
+skips when either variable is missing. Linux CI also runs them against
+Musubi's disposable Docker integration stack; the pinned TEI test image has
+no ARM64 manifest, so that stack does not boot natively on Apple Silicon.
+
 ## Contributing and security
 
 Discuss substantial changes in an issue first. Follow the
