@@ -276,7 +276,7 @@ dev = [
 ]
 
 [package.metadata]
-requires-dist = [{ name = "musubi-sdk", git = "https://github.com/sourceblender/musubi-sdk.git?rev=24fd4a32cc39ccdc341e041072e3f2ad039d5748" }]
+requires-dist = [{ name = "musubi-sdk", specifier = ">=0.1.0" }]
 
 [package.metadata.requires-dev]
 dev = [
@@ -289,9 +289,13 @@ dev = [
 [[package]]
 name = "musubi-sdk"
 version = "0.1.0"
-source = { git = "https://github.com/sourceblender/musubi-sdk.git?rev=24fd4a32cc39ccdc341e041072e3f2ad039d5748#24fd4a32cc39ccdc341e041072e3f2ad039d5748" }
+source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "httpx" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/51/82/c75a5cafe72c616606c14482e52f6ef2298182b67492965ca109b613ba96/musubi_sdk-0.1.0.tar.gz", hash = "sha256:8d4c3e7088e04fa3788dc85724eb3ac1be6ea5c0afd317f4565e71601a2926ea", size = 53838, upload-time = "2026-09-30T23:14:45.288Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/db/3d/8b940ad80523dc3d52dbee31aae910e6a7fb1a44d7581ab330b27d757008/musubi_sdk-0.1.0-py3-none-any.whl", hash = "sha256:56afee8bbabfe772b5299085660cff9bbfe8799e662f82886901ca381e62dfe8", size = 21697, upload-time = "2026-09-30T23:14:44.267Z" },
 ]
 
 [[package]]

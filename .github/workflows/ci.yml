@@ -35,7 +35,7 @@ jobs:
       - uses: astral-sh/setup-uv@v8.1.0
       - run: uv sync --extra dev --python 3.12
         working-directory: core
-      - run: uv pip install --python core/.venv/bin/python git+https://github.com/sourceblender/musubi-sdk.git@24fd4a32cc39ccdc341e041072e3f2ad039d5748
+      - run: uv pip install --python core/.venv/bin/python musubi-sdk==0.1.0
       - run: uv pip install --python core/.venv/bin/python --no-deps -e .
       - run: cp tests/integration/test_livekit_e2e.py core/tests/integration/test_livekit_plugin_e2e.py
       - run: uv run --no-sync --extra dev pytest -q -m integration tests/integration/test_livekit_plugin_e2e.py

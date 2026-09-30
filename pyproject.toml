@@ -24,9 +24,6 @@ allow-direct-references = true
 [tool.hatch.build.targets.wheel]
 packages = ["src/musubi_livekit"]
 
-[tool.uv.sources]
-musubi-sdk = { git = "https://github.com/sourceblender/musubi-sdk.git", rev = "24fd4a32cc39ccdc341e041072e3f2ad039d5748" }
-
 [dependency-groups]
 dev = ["pytest>=8", "pytest-asyncio>=0.23", "ruff>=0.6", "mypy>=1.11"]
 
