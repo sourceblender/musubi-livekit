@@ -40,8 +40,8 @@ pytestmark = pytest.mark.integration
 # routes to the right Qdrant collection from the endpoint, not from
 # the namespace string — so a single namespace covers both writes
 # without needing a token rescope or a multi-plane fixture.
-_NS = "test/livekit-adapter/episodic"
-_ARTIFACT_NS = "test/livekit-adapter/artifact"
+_NS = "eric/integration-test/episodic"
+_ARTIFACT_NS = "eric/integration-test/artifact"
 
 
 def _adapter(
