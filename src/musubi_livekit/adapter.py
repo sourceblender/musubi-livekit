@@ -16,6 +16,13 @@ from typing import Any
 
 from musubi_sdk.exceptions import MusubiError
 
+try:
+    # The old in-tree adapter accepted the in-tree SDK client. Keep its error
+    # hierarchy during the import-path transition without requiring the server.
+    from musubi.sdk.exceptions import MusubiError as CoreMusubiError
+except ImportError:
+    CoreMusubiError = MusubiError
+
 from musubi_livekit.cache import ContextCache, RetrievalStatus
 from musubi_livekit.config import LiveKitAdapterConfig
 from musubi_livekit.fast_talker import FastTalker
@@ -122,7 +129,7 @@ class LiveKitAdapter:
                 tags=["livekit-voice", "heuristic-fact", *_EPISODE_CONTEXT_TAGS],
                 importance=6,
             )
-        except MusubiError:
+        except (MusubiError, CoreMusubiError):
             log.warning("livekit fact-capture failed", exc_info=True)
 
     # ------------------------------------------------------------------
@@ -152,7 +159,7 @@ class LiveKitAdapter:
             "source_ref": session_id,
             "content": scrubbed.encode("utf-8"),
         }
-        last_exc: MusubiError | None = None
+        last_exc: Exception | None = None
         for attempt in range(1, self.config.upload_max_attempts + 1):
             if attempt > 1 and self.config.upload_backoff_s > 0:
                 await asyncio.sleep(self.config.upload_backoff_s)
@@ -172,7 +179,7 @@ class LiveKitAdapter:
                     )
                 self.upload_history.append(payload)
                 return
-            except MusubiError as exc:
+            except (MusubiError, CoreMusubiError) as exc:
                 last_exc = exc
                 continue
         # Retries exhausted — enqueue for deferred retry instead of
@@ -193,5 +200,5 @@ class LiveKitAdapter:
                 content=f"Session {session_id} captured.",
                 importance=3,
             )
-        except MusubiError:
+        except (MusubiError, CoreMusubiError):
             log.warning("livekit summary thought failed", exc_info=True)

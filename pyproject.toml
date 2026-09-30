@@ -57,3 +57,7 @@ files = ["src/musubi_livekit"]
 [[tool.mypy.overrides]]
 module = ["musubi_sdk.*"]
 ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = ["musubi.sdk.exceptions"]
+ignore_missing_imports = true
