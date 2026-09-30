@@ -1,19 +1,77 @@
 # musubi-livekit
 
-Planned LiveKit plugin for Musubi.
+`musubi-livekit` connects a LiveKit voice session's callbacks to the Musubi
+memory API. It provides a `LiveKitAdapter`, a slow prefetcher, a fast context
+reader, a bounded cache, optional fact capture, and transcript handling. The
+package is a Python library: your LiveKit worker still owns the session,
+event subscriptions, credentials, and user-facing responses.
 
-## Status
+## Install
 
-This repository is a placeholder. It has no installable plugin, released package, or supported API yet. Implementation and integration guidance will be added with the code.
+Requires Python 3.12 or later. Until Musubi publishes a standalone Python SDK,
+this package installs the Musubi SDK from the tagged `sourceblender/musubi`
+source release. That currently brings the server's Python dependencies too.
 
-## Contributing
+```bash
+pip install 'git+https://github.com/sourceblender/musubi-livekit.git'
+```
 
-Please open an issue to discuss substantial work before starting a PR. The Sourceblender organization’s [contributing guide](https://github.com/sourceblender/.github/blob/main/CONTRIBUTING.md) and [code of conduct](https://github.com/sourceblender/.github/blob/main/CODE_OF_CONDUCT.md) apply.
+## Use in a worker
 
-## Security
+Construct one adapter per voice session. Feed it the transcript and session
+events from your own LiveKit worker. These are callbacks to wire into the
+worker, not an automatically installed LiveKit plugin.
 
-Please report vulnerabilities privately through the repository’s Security tab when available, or follow the [organization security policy](https://github.com/sourceblender/.github/blob/main/SECURITY.md). Do not post credentials or captured memory in public issues.
+```python
+from musubi.sdk.async_client import AsyncMusubiClient
+from musubi_livekit import LiveKitAdapter, LiveKitAdapterConfig
 
-## License
+client = AsyncMusubiClient(base_url=api_url, token=token)
+adapter = LiveKitAdapter(
+    client=client,
+    namespace="assistant/voice/episodic",
+    artifact_namespace="assistant/voice/artifact",
+    config=LiveKitAdapterConfig(
+        capture_transcripts=False,
+        capture_facts=False,
+    ),
+)
 
-Apache-2.0. See [LICENSE](LICENSE).
+# Call from the matching LiveKit worker events:
+await adapter.on_transcript_segment(partial_text)
+await adapter.on_user_turn_completed(final_text)
+context = await adapter.fast_talker.get_context(final_text)
+warnings = adapter.retrieval_status
+await adapter.on_session_end(session_id=session_id, vtt_transcript=vtt_text)
+```
+
+Fact and transcript capture are enabled in the default config. Set the privacy
+flags deliberately for your application before handling a real session.
+`retrieval_status` exposes degradation warnings so the worker can tell the
+user when memory is unavailable. A successful callback call is not a guarantee
+that a transcript reached artifact storage: until the SDK has `artifacts.upload`,
+the adapter falls back to episodic capture. See the code and tests before
+promising artifact storage or delivery guarantees.
+
+## Development
+
+```bash
+uv sync --locked --python 3.12
+uv run pytest -q
+uv run ruff check src tests
+uv run ruff format --check src tests
+uv run mypy src/musubi_livekit
+```
+
+The unit suite exercises the extracted adapter and retrieval degradation
+channel. Three historical tests remain skipped because they require a running
+Musubi stack and a LiveKit session simulator; they are not release evidence.
+
+## Contributing and security
+
+Discuss substantial changes in an issue first. Follow the
+[Sourceblender contributing guide](https://github.com/sourceblender/.github/blob/main/CONTRIBUTING.md).
+Report security issues privately through the repository Security tab or the
+[organization policy](https://github.com/sourceblender/.github/blob/main/SECURITY.md).
+
+Licensed under Apache-2.0. See [LICENSE](LICENSE).
