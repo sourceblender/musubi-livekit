@@ -21,3 +21,21 @@ jobs:
       - run: uv run mypy src/musubi_livekit
       - run: uv run pytest -q
       - run: uv build
+
+  integration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          repository: sourceblender/musubi
+          ref: v1.27.1
+          path: core
+      - uses: astral-sh/setup-uv@v8.1.0
+      - run: uv sync --extra dev --python 3.12
+        working-directory: core
+      - run: uv pip install --python core/.venv/bin/python --no-deps -e .
+      - run: cp tests/integration/test_livekit_e2e.py core/tests/integration/test_livekit_plugin_e2e.py
+      - run: uv run --no-sync --extra dev pytest -q -m integration tests/integration/test_livekit_plugin_e2e.py
+        working-directory: core
