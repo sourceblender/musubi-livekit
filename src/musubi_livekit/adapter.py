@@ -14,7 +14,7 @@ import asyncio
 import logging
 from typing import Any
 
-from musubi.sdk.exceptions import MusubiError
+from musubi_sdk.exceptions import MusubiError
 
 from musubi_livekit.cache import ContextCache, RetrievalStatus
 from musubi_livekit.config import LiveKitAdapterConfig

@@ -8,13 +8,17 @@ event subscriptions, credentials, and user-facing responses.
 
 ## Install
 
-Requires Python 3.12 or later. Until Musubi publishes a standalone Python SDK,
-this package installs the Musubi SDK from the tagged `sourceblender/musubi`
-source release. That currently brings the server's Python dependencies too.
+Requires Python 3.12 or later. The adapter depends on the standalone
+`musubi-sdk` client, not the Musubi server. Until the SDK has a package release,
+install its source first:
 
 ```bash
+pip install 'git+https://github.com/sourceblender/musubi-sdk.git'
 pip install 'git+https://github.com/sourceblender/musubi-livekit.git'
 ```
+
+After the SDK is published, installing `musubi-livekit` will resolve its
+`musubi-sdk>=0.1.0` dependency normally.
 
 ## Use in a worker
 
@@ -23,7 +27,7 @@ events from your own LiveKit worker. These are callbacks to wire into the
 worker, not an automatically installed LiveKit plugin.
 
 ```python
-from musubi.sdk.async_client import AsyncMusubiClient
+from musubi_sdk import AsyncMusubiClient
 from musubi_livekit import LiveKitAdapter, LiveKitAdapterConfig
 
 client = AsyncMusubiClient(base_url=api_url, token=token)
