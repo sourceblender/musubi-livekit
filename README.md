@@ -14,7 +14,7 @@ Both packages are published on PyPI. Install the released adapter and its SDK
 dependency with:
 
 ```bash
-pip install musubi-livekit==0.1.0
+pip install musubi-livekit
 ```
 
 ## Use in a worker
