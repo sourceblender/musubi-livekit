@@ -9,6 +9,9 @@ dependencies = [
   "musubi-sdk>=0.1.0",
 ]
 
+[project.optional-dependencies]
+voice = ["livekit-agents>=1.6.10,<1.9", "aiohttp>=3.9", "google-genai>=1"]
+
 [project.urls]
 Homepage = "https://github.com/sourceblender/musubi-livekit"
 Repository = "https://github.com/sourceblender/musubi-livekit"

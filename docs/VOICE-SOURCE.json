@@ -1,0 +1,30 @@
+{
+  "repository": "sourceblender/voice",
+  "revision": "ab8937ac",
+  "files": [
+    {
+      "source": "sdk/src/sdk/musubi_client.py",
+      "sha256": "97afe83ea5a8698ae4728a1acbddfe3d5067ca83fd8ba65a834a0a197d98bba3",
+      "target": "voice/client.py"
+    },
+    {
+      "source": "sdk/src/sdk/postcall_memory.py",
+      "sha256": "53264e4a4770774c0a8b633f0949f42f48abb3022c9b598036130131069442d9",
+      "target": "voice/postcall_memory.py"
+    },
+    {
+      "source": "tools/src/tools/memory.py",
+      "sha256": "6149f238c1d9c41bfc4f866460d4909baa474802082ed4372fe9b6c6bb04b611",
+      "target": "voice/tools.py"
+    },
+    {
+      "source": "sdk/src/sdk/trace.py",
+      "sha256": "8922956ff64a8d2df6f817aa9cfbb50daed307c6032c81e1cf7919af04908a89",
+      "target": "voice/trace.py"
+    }
+  ],
+  "fragments": [
+    "base_agent.MemoryPrefetchMixin",
+    "transcript.memory_eligible_transcript"
+  ]
+}
