@@ -38,7 +38,7 @@ from musubi_livekit import (
     redact_pii,
 )
 
-_NS = "eric/livekit-voice/episodic"
+_NS = "user/livekit-voice/episodic"
 
 
 # ---------------------------------------------------------------------------
@@ -223,7 +223,7 @@ def test_transcript_segment_triggers_prefetch() -> None:
     adapter = LiveKitAdapter(
         client=fake,
         namespace=_NS,
-        artifact_namespace="eric/_shared/artifact",
+        artifact_namespace="user/_shared/artifact",
         config=LiveKitAdapterConfig(),
     )
 
@@ -245,7 +245,7 @@ def test_turn_end_triggers_final_prefetch() -> None:
     adapter = LiveKitAdapter(
         client=fake,
         namespace=_NS,
-        artifact_namespace="eric/_shared/artifact",
+        artifact_namespace="user/_shared/artifact",
         config=LiveKitAdapterConfig(),
     )
 
@@ -267,7 +267,7 @@ def test_session_end_uploads_artifact() -> None:
     adapter = LiveKitAdapter(
         client=fake,
         namespace=_NS,
-        artifact_namespace="eric/_shared/artifact",
+        artifact_namespace="user/_shared/artifact",
         config=LiveKitAdapterConfig(),
     )
 
@@ -312,7 +312,7 @@ def test_session_transcript_uploaded_as_vtt() -> None:
     adapter = LiveKitAdapter(
         client=fake,
         namespace=_NS,
-        artifact_namespace="eric/_shared/artifact",
+        artifact_namespace="user/_shared/artifact",
         config=LiveKitAdapterConfig(),
     )
     vtt = "WEBVTT\n\n00:00 --> 00:05\nthe cuda kernel"
@@ -346,7 +346,7 @@ def test_upload_retries_on_transient_failure() -> None:
     adapter = LiveKitAdapter(
         client=fake,
         namespace=_NS,
-        artifact_namespace="eric/_shared/artifact",
+        artifact_namespace="user/_shared/artifact",
         config=LiveKitAdapterConfig(upload_max_attempts=3, upload_backoff_s=0.0),
     )
 
@@ -372,7 +372,7 @@ def test_upload_queue_persists_on_hard_failure() -> None:
     adapter = LiveKitAdapter(
         client=fake,
         namespace=_NS,
-        artifact_namespace="eric/_shared/artifact",
+        artifact_namespace="user/_shared/artifact",
         config=LiveKitAdapterConfig(upload_max_attempts=2, upload_backoff_s=0.0),
     )
 
@@ -397,7 +397,7 @@ def test_capture_disabled_env_flag_skips_all_writes() -> None:
     adapter = LiveKitAdapter(
         client=fake,
         namespace=_NS,
-        artifact_namespace="eric/_shared/artifact",
+        artifact_namespace="user/_shared/artifact",
         config=LiveKitAdapterConfig(capture_transcripts=False, capture_facts=False),
     )
 
@@ -486,7 +486,7 @@ def test_redaction_pass_noop_when_disabled() -> None:
     adapter = LiveKitAdapter(
         client=fake,
         namespace=_NS,
-        artifact_namespace="eric/_shared/artifact",
+        artifact_namespace="user/_shared/artifact",
         config=LiveKitAdapterConfig(redact_pii=False),
     )
     payload = "Contact alice@example.com please"
@@ -499,7 +499,7 @@ def test_redaction_pass_active_when_enabled() -> None:
     adapter = LiveKitAdapter(
         client=fake,
         namespace=_NS,
-        artifact_namespace="eric/_shared/artifact",
+        artifact_namespace="user/_shared/artifact",
         config=LiveKitAdapterConfig(redact_pii=True),
     )
     payload = "Contact alice@example.com please"
@@ -529,7 +529,7 @@ def test_session_end_emits_summary_thought() -> None:
     adapter = LiveKitAdapter(
         client=fake,
         namespace=_NS,
-        artifact_namespace="eric/_shared/artifact",
+        artifact_namespace="user/_shared/artifact",
         config=LiveKitAdapterConfig(),
     )
 
@@ -547,7 +547,7 @@ def test_heuristic_capture_routed_via_episodic_capture() -> None:
     adapter = LiveKitAdapter(
         client=fake,
         namespace=_NS,
-        artifact_namespace="eric/_shared/artifact",
+        artifact_namespace="user/_shared/artifact",
         config=LiveKitAdapterConfig(capture_facts=True),
     )
 
@@ -571,7 +571,7 @@ def test_heuristic_capture_skipped_when_uninteresting() -> None:
     adapter = LiveKitAdapter(
         client=fake,
         namespace=_NS,
-        artifact_namespace="eric/_shared/artifact",
+        artifact_namespace="user/_shared/artifact",
         config=LiveKitAdapterConfig(capture_facts=True),
     )
 
@@ -588,7 +588,7 @@ def test_transcript_fallback_capture_adds_typed_episode_tags_and_content() -> No
     adapter = LiveKitAdapter(
         client=fake,
         namespace=_NS,
-        artifact_namespace="eric/_shared/artifact",
+        artifact_namespace="user/_shared/artifact",
         config=LiveKitAdapterConfig(capture_transcripts=True),
     )
 
@@ -618,7 +618,7 @@ def test_transcript_fallback_capture_empty_transcript(vtt: str) -> None:
     adapter = LiveKitAdapter(
         client=fake,
         namespace=_NS,
-        artifact_namespace="eric/_shared/artifact",
+        artifact_namespace="user/_shared/artifact",
         config=LiveKitAdapterConfig(capture_transcripts=True),
     )
 
@@ -638,7 +638,7 @@ def test_transcript_capture_skipped_if_handler_succeeds() -> None:
     adapter = LiveKitAdapter(
         client=fake,
         namespace=_NS,
-        artifact_namespace="eric/_shared/artifact",
+        artifact_namespace="user/_shared/artifact",
         config=LiveKitAdapterConfig(capture_transcripts=True),
     )
 

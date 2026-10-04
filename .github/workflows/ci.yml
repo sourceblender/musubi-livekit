@@ -30,7 +30,7 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           repository: sourceblender/musubi
-          ref: v1.27.1
+          ref: v1.28.0  # first release whose integration token scopes are admin/, not a person
           path: core
       - uses: astral-sh/setup-uv@v8.1.0
       - run: uv sync --extra dev --python 3.12
