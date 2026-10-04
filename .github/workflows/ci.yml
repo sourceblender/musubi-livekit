@@ -30,13 +30,15 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           repository: sourceblender/musubi
-          ref: v1.27.1
+          ref: v1.28.0  # first release whose integration token scopes are admin/, not a person
           path: core
       - uses: astral-sh/setup-uv@v8.1.0
       - run: uv sync --extra dev --python 3.12
         working-directory: core
       - run: uv pip install --python core/.venv/bin/python musubi-sdk==0.1.0
       - run: uv pip install --python core/.venv/bin/python --no-deps -e .
+      # core >= v1.28.0 no longer ships the LiveKit fixtures; bring this repo's copy.
+      - run: cp tests/integration/_livekit_fixtures.py core/tests/integration/_livekit_fixtures.py
       - run: cp tests/integration/test_livekit_e2e.py core/tests/integration/test_livekit_plugin_e2e.py
       - run: uv run --no-sync --extra dev pytest -q -m integration tests/integration/test_livekit_plugin_e2e.py
         working-directory: core

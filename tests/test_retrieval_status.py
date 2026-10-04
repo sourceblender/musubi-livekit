@@ -56,7 +56,7 @@ def _degraded(warnings: list[str]) -> dict[str, Any]:
 
 
 async def test_overlap_old_slow_failure_must_not_clobber_newer_fast() -> None:
-    """RACE (Yua): a Slow Thinker request STARTED first but completing LAST (with a failure) must NOT
+    """RACE: a Slow Thinker request STARTED first but completing LAST (with a failure) must NOT
     overwrite the status of a newer Fast Talker turn that already delivered healthy context."""
     status = RetrievalStatus()
     gate = asyncio.Event()
@@ -168,7 +168,7 @@ async def test_slow_thinker_total_failure_is_visible() -> None:
 
 
 async def test_slow_thinker_failure_visible_on_agent_channel() -> None:
-    """The REAL seam (Yua): a Slow Thinker total failure must reach the AGENT channel
+    """The REAL seam: a Slow Thinker total failure must reach the AGENT channel
     (``adapter.retrieval_status``), not merely ``slow_thinker.last_warnings`` in isolation."""
     adapter = LiveKitAdapter(
         client=_Client(raises=True),
