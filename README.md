@@ -57,11 +57,11 @@ promising artifact storage or delivery guarantees.
 ## Development
 
 ```bash
-uv sync --locked --python 3.12
-uv run pytest -q
-uv run ruff check src tests
-uv run ruff format --check src tests
-uv run mypy src/musubi_livekit
+uv sync --locked --extra voice --python 3.12
+uv run --extra voice pytest -q
+uv run --extra voice ruff check src tests
+uv run --extra voice ruff format --check src tests
+uv run --extra voice mypy src/musubi_livekit
 ```
 
 The unit suite exercises the extracted adapter and retrieval degradation
@@ -75,7 +75,7 @@ with an operator-scoped test token:
 ```bash
 MUSUBI_TEST_API_URL=http://127.0.0.1:8100/v1 \
 MUSUBI_TEST_TOKEN=<disposable-test-token> \
-uv run pytest -q -m integration tests/integration/test_livekit_e2e.py
+uv run --extra voice pytest -q -m integration tests/integration/test_livekit_e2e.py
 ```
 
 The default test command excludes these integration tests. Their fixture
@@ -91,3 +91,38 @@ Report security issues privately through the repository Security tab or the
 [organization policy](https://github.com/sourceblender/.github/blob/main/SECURITY.md).
 
 Licensed under Apache-2.0. See [LICENSE](LICENSE).
+
+## Household voice provider
+
+Install the optional integration with `pip install 'musubi-livekit[voice]'`.
+`musubi_livekit.voice.provider.MusubiMemoryMixin` implements the structural
+call-memory contract consumed by Duet. A seat composes that mixin into its agent
+and supplies `memory_config = MemoryConfig(agent_name, memory_agent_tag,
+musubi_v2_namespace)`. This identity is separate from its conversation-engine
+configuration. The provider retains the current recent/search/remember tool
+names and result strings, per-call cache, write authority and post-call
+caller-evidence validation.
+
+For these seats, memory runs only inside the Duet process. Do not also wire the
+callback adapter or memory capture into the outer LiveKit audio bridge. The
+engine passes caller-origin write policy before tools can run, then invokes
+prefetch and `wire_call_memory` in its lifecycle. Synthetic callers cannot
+write household memory. A successful extraction subprocess does not prove a
+Musubi save; verify positive writes by reading the saved object from Musubi.
+
+Source provenance and the inherited MIT license are in `docs/VOICE-SOURCE.json`
+and `docs/VOICE-MIT-LICENSE`. The existing adapter is unchanged. Two changes to
+the extracted path are deliberate: a failed prefetch still warms the speaking
+model, and validation logs fixed rejection-reason counts without caller text.
+
+Run `uv sync --extra voice`, then `uv run --extra voice pytest -q` to exercise
+the extracted integration alongside the adapter suite. The three existing
+live-stack skips remain unproven integration coverage.
+
+The household provider's extraction prompt and caller naming policy are
+application configuration, not library defaults. Supply a private policy JSON
+file through `MemoryConfig.postcall_policy_path`, plus `caller_label`,
+`wake_names` and `search_stopwords` for recall. The application owns and packages
+that file; the library never logs its contents. The generic default uses
+`Caller said:`. An application retaining older stored prefixes must explicitly
+supply that original caller label.

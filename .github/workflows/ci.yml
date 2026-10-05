@@ -15,11 +15,11 @@ jobs:
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - uses: astral-sh/setup-uv@v8.1.0
-      - run: uv sync --locked --python 3.12
-      - run: uv run ruff check src tests
-      - run: uv run ruff format --check src tests
-      - run: uv run mypy src/musubi_livekit
-      - run: uv run pytest -q
+      - run: uv sync --locked --extra voice --python 3.12
+      - run: uv run --extra voice ruff check src tests
+      - run: uv run --extra voice ruff format --check src tests
+      - run: uv run --extra voice mypy src/musubi_livekit
+      - run: uv run --extra voice pytest -q
       - run: uv build
 
   integration:
