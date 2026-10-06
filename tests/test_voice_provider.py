@@ -140,3 +140,57 @@ async def test_instruction_update_failure_still_warms_and_surfaces_error():
     with pytest.raises(RuntimeError, match="update failed"):
         await seat._inject_recent_context(10)
     seat.warm_llm_prefix.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_extractor_emits_all_rejection_counts_without_candidate_content(monkeypatch, caplog):
+    import json
+    import logging
+    from unittest.mock import MagicMock, patch
+
+    from musubi_livekit.voice.postcall_memory import _extract_memories
+
+    quote = "My train leaves Tuesday."
+    transient = "What time is it?"
+    private = "private-candidate-sentinel"
+    candidates = [
+        None,
+        {"content": 123},
+        {"content": " "},
+        {"content": private},
+        {"content": private, "evidence": [123]},
+        {"content": private, "evidence": ["forged-private-quote"]},
+        {"content": private, "evidence": [transient]},
+        {"content": private, "evidence": [quote], "category": "general"},
+        {"content": private, "evidence": [quote], "category": "planning"},
+    ]
+    client = MagicMock()
+    client.models.generate_content.return_value.text = json.dumps({"memories": candidates})
+    monkeypatch.setenv("GEMINI_API_KEY", "fake-key")
+    with (
+        caplog.at_level(logging.INFO, logger="voice.agent"),
+        patch("musubi_livekit.voice.postcall_memory.genai.Client", return_value=client),
+    ):
+        result = await _extract_memories(
+            f"[10:00:00] [USER] {quote}\n[10:00:01] [USER] {transient}\n"
+        )
+    assert result.status == "extracted" and len(result.memories) == 1
+    validation = [row.message for row in caplog.records if "validation raw=" in row.message]
+    assert len(validation) == 1
+    assert "raw=9 accepted=1 rejected=8" in validation[0]
+    reasons = json.loads(validation[0].split("reasons=", 1)[1])
+    assert reasons == dict.fromkeys(
+        [
+            "not_object",
+            "content_not_string",
+            "empty_content",
+            "missing_evidence",
+            "evidence_not_string",
+            "evidence_not_caller_quote",
+            "no_durable_evidence",
+            "general_category",
+        ],
+        1,
+    )
+    for value in (private, "forged-private-quote", quote, transient):
+        assert value not in caplog.text
