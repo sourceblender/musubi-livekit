@@ -409,6 +409,7 @@ class ExtractionResult:
 
     memories: list[ExtractedMemory]
     status: ExtractionStatus
+    validation_counts: dict[str, Any] | None = None
 
 
 def _classify_gemini_exception(exc: BaseException) -> ExtractionStatus:
@@ -499,12 +500,20 @@ async def _extract_memories(transcript: str, *, policy_path: str | None = None) 
         len(raw_memories) - len(out),
         json.dumps(rejection_counts, sort_keys=True, separators=(",", ":")),
     )
+    validation_counts = {
+        "raw": len(raw_memories),
+        "accepted": len(out),
+        "rejected": len(raw_memories) - len(out),
+        "reasons": rejection_counts,
+    }
     if not out:
         # Gemini reached + parsed but produced 0 valid memories. This is
         # the genuine "uneventful call" path, distinct from auth/parse
         # failures above.
-        return ExtractionResult(memories=[], status="empty_extraction")
-    return ExtractionResult(memories=out, status="extracted")
+        return ExtractionResult(
+            memories=[], status="empty_extraction", validation_counts=validation_counts
+        )
+    return ExtractionResult(memories=out, status="extracted", validation_counts=validation_counts)
 
 
 # --- capture ----------------------------------------------------------------
@@ -584,6 +593,7 @@ async def run_extraction(
     :meth:`MusubiClientConfig.from_env`.
     """
     started = time.monotonic()
+    validation_counts: dict[str, Any] | None = None
 
     def _complete(status: str, *, extracted: int = 0, captured: int = 0) -> int:
         """Single completion log line so audit/Rin can grep one shape.
@@ -608,6 +618,24 @@ async def run_extraction(
         breakage for three days.
         """
         total_ms = int((time.monotonic() - started) * 1000)
+        # Detached extraction outlives the engine collector. This provider-owned
+        # event joins diagnostics to the call without candidate or caller text.
+        # Null means validation never ran; it must not be reported as zero rejects.
+        logger.info(
+            "postcall_memory: telemetry %s",
+            json.dumps(
+                {
+                    "schema": "musubi.postcall-validation.v1",
+                    "call_sid": call_sid,
+                    "status": status,
+                    "validation": validation_counts,
+                    "captured": captured,
+                    "total_ms": total_ms,
+                },
+                sort_keys=True,
+                separators=(",", ":"),
+            ),
+        )
         logger.info(
             "postcall_memory: completed call_sid=%s status=%s extracted=%d captured=%d total_ms=%d",
             call_sid,
@@ -631,6 +659,7 @@ async def run_extraction(
         if policy_path
         else await _extract_memories(transcript)
     )
+    validation_counts = result.validation_counts
     if result.status != "extracted":
         # Propagate the typed status from _extract_memories — distinguishes
         # auth/transport/parse failures from genuine empty extraction.

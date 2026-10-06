@@ -126,3 +126,11 @@ file through `MemoryConfig.postcall_policy_path`, plus `caller_label`,
 that file; the library never logs its contents. The generic default uses
 `Caller said:`. An application retaining older stored prefixes must explicitly
 supply that original caller label.
+
+Detached voice extraction emits one `musubi.postcall-validation.v1` JSON event
+in the provider's postcall log, joined by `call_sid`. `validation` contains raw,
+accepted and rejected totals plus fixed rejection-reason counts; it contains no
+candidate or caller text. `validation: null` means validation did not run (for
+example, no transcript or provider failure), rather than zero rejected memories.
+The event also includes completion status, captured count and elapsed milliseconds.
+It is independent of the engine collector, which may already have closed.

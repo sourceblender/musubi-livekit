@@ -194,3 +194,136 @@ async def test_extractor_emits_all_rejection_counts_without_candidate_content(mo
     )
     for value in (private, "forged-private-quote", quote, transient):
         assert value not in caplog.text
+
+
+@pytest.mark.asyncio
+async def test_runtime_http_rejections_join_call_without_content(monkeypatch, tmp_path, caplog):
+    import json
+    import logging
+    from unittest.mock import AsyncMock
+
+    from aiohttp import web
+    from google import genai
+    from google.genai import types
+
+    from musubi_livekit.voice import postcall_memory as memory
+
+    quote = "My train leaves Tuesday."
+    transient = "What time is it?"
+    private = "private-candidate-sentinel"
+    candidates = [
+        None,
+        {"content": 123},
+        {"content": " "},
+        {"content": private},
+        {"content": private, "evidence": [123]},
+        {"content": private, "evidence": ["forged-private-quote"]},
+        {"content": private, "evidence": [transient]},
+        {"content": private, "evidence": [quote], "category": "general"},
+    ]
+    requests = 0
+
+    async def respond(request):
+        nonlocal requests
+        requests += 1
+        assert request.method == "POST"
+        return web.json_response(
+            {
+                "candidates": [
+                    {
+                        "content": {
+                            "role": "model",
+                            "parts": [{"text": json.dumps({"memories": candidates})}],
+                        },
+                        "finishReason": "STOP",
+                    }
+                ]
+            }
+        )
+
+    app = web.Application()
+    app.router.add_post("/{path:.*}", respond)
+    runner = web.AppRunner(app)
+    await runner.setup()
+    site = web.TCPSite(runner, "127.0.0.1", 0)
+    await site.start()
+    port = site._server.sockets[0].getsockname()[1]
+    client = genai.Client(
+        api_key="isolated-fake-key",
+        http_options=types.HttpOptions(base_url=f"http://127.0.0.1:{port}"),
+    )
+    monkeypatch.setattr(memory.genai, "Client", lambda **kwargs: client)
+    monkeypatch.setenv("GEMINI_API_KEY", "isolated-fake-key")
+    monkeypatch.setenv("LIVEKIT_VOICE_LOGS", str(tmp_path))
+    transcript = tmp_path / "phone-transcripts" / "isolated-rejection.txt"
+    transcript.parent.mkdir()
+    transcript.write_text(f"[10:00:00] [USER] {quote}\n[10:00:01] [USER] {transient}\n")
+    capture = AsyncMock()
+    monkeypatch.setattr(memory, "_capture_one", capture)
+    try:
+        with caplog.at_level(logging.INFO, logger="voice.agent"):
+            count = await memory.run_extraction(
+                call_sid="isolated-rejection",
+                namespace="smoke/consumer/episodic",
+                speaker_tag="isolated",
+                client=object(),
+            )
+    finally:
+        client.close()
+        await runner.cleanup()
+    assert requests == 1 and count == 0
+    capture.assert_not_awaited()
+    events = [
+        json.loads(r.message.split("telemetry ", 1)[1])
+        for r in caplog.records
+        if r.message.startswith("postcall_memory: telemetry ")
+    ]
+    assert len(events) == 1
+    assert events[0]["call_sid"] == "isolated-rejection"
+    assert events[0]["status"] == "empty_extraction"
+    assert events[0]["validation"] == {
+        "raw": 8,
+        "accepted": 0,
+        "rejected": 8,
+        "reasons": dict.fromkeys(
+            [
+                "not_object",
+                "content_not_string",
+                "empty_content",
+                "missing_evidence",
+                "evidence_not_string",
+                "evidence_not_caller_quote",
+                "no_durable_evidence",
+                "general_category",
+            ],
+            1,
+        ),
+    }
+    for value in (private, "forged-private-quote", quote, transient):
+        assert value not in caplog.text
+
+
+@pytest.mark.asyncio
+async def test_skipped_validation_is_unknown_not_zero_rejections(monkeypatch, caplog):
+    import json
+    import logging
+
+    from musubi_livekit.voice import postcall_memory as memory
+
+    monkeypatch.setattr(memory, "_read_transcript", lambda _: None)
+    with caplog.at_level(logging.INFO, logger="voice.agent"):
+        assert (
+            await memory.run_extraction(
+                call_sid="no-transcript",
+                namespace="smoke/consumer/episodic",
+                speaker_tag=None,
+            )
+            == 0
+        )
+    event = next(
+        json.loads(r.message.split("telemetry ", 1)[1])
+        for r in caplog.records
+        if r.message.startswith("postcall_memory: telemetry ")
+    )
+    assert event["status"] == "no_transcript"
+    assert event["validation"] is None
